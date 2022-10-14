@@ -63,14 +63,13 @@ function selectCards() {
 
 function createModal(card) {
 
-    let cardClasses = card.classList;
-    let employeeNumberClass = Array.from(cardClasses)
+    let employeeNumberClass = Array.from(card.classList)
         .find(word => word.includes("-employee"))
-    let employeeNumber = parseInt(employeeNumberClass);
-    let employee = employeeArray[employeeNumber];
+    const employeeNumber = parseInt(employeeNumberClass);
+    const employee = employeeArray[employeeNumber];
 
     const modal = `
-        <div class="modal-container">
+        <div class="modal-container" id="modal-container">
             <div class="modal">
                 <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
                 <div class="modal-info-container">
@@ -79,12 +78,31 @@ function createModal(card) {
                     <p class="modal-text">${employee.email}</p>
                     <p class="modal-text cap">${employee.location.city}</p>
                     <hr>
-                    <p class="modal-text">${employee.phone}</p>
+                    <p class="modal-text">${formatPhone(employee.phone)}</p>
                     <p class="modal-text">${employee.location.street.number} ${employee.location.street.name}, ${employee.location.city}, ${employee.location.state}</p>
-                    <p class="modal-text">Birthday: ${employee.dob.date}</p>
+                    <p class="modal-text">Birthday: ${formatBirthday(employee.dob.date)}</p>
                 </div>
             </div>`
 
     body.insertAdjacentHTML('beforeend', modal)
 
+    const closeButton = document.getElementById('modal-close-btn')
+    const domModal = document.getElementById('modal-container')
+    
+    closeButton.addEventListener('click', () => domModal.remove())
+
+}
+
+function formatBirthday(dob) {
+    const birthday = new Date(dob)
+    return birthday.toLocaleDateString()
+}
+
+function formatPhone(number) {
+    console.log(number)
+    const plainNumber = number.replace(/\D/g, '')
+
+    console.log(plainNumber)
+    const formattedNumber = number.replace(/(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3')
+    return formattedNumber
 }
