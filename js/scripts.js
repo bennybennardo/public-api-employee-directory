@@ -1,10 +1,12 @@
 const gallery = document.getElementById('gallery');
 const body = document.body;
-const cards = new Array;
+let cards = new Array;
 const employeeArray = new Array;
-const dataUrl = 'https://randomuser.me/api/?results=12'
-const employeeNumberRegex = /^\d+-employee$/
+const cardsToDisplay = 12;
+const dataUrl = `https://randomuser.me/api/?results=${cardsToDisplay}&nat=au,ca,us,gb`
 let employeeNumber = 0
+const searchInput = document.getElementById('search-input')
+const searchButton = document.getElementById('search-submit')
 
 // ------------------------------------------
 //  FETCH FUNCTIONS
@@ -13,13 +15,11 @@ let employeeNumber = 0
 fetch(dataUrl)
     .then( response => response.json())
     .then( data => createEmployeeArray(data.results))
-    .then( selectCards )
-
+    .then( data => selectCards(data) )
 
 // ------------------------------------------
 //  HELPER FUNCTIONS
 // ------------------------------------------
-
 
 //This function receives an array-like object that contains employee data objects.
 //It maps over the object and pushes each employee object onto a proper array.
@@ -27,6 +27,8 @@ function createEmployeeArray(data) {
     data.map( employee => {
         employeeArray.push(employee)
     })
+
+    return employeeArray;
 };
 
 
@@ -48,6 +50,7 @@ function createCard(array) {
             </div>
         </div>`)
     };
+    gallery.innerHTML = '';
     gallery.insertAdjacentHTML('beforeend', card.join(''));
 }
 
@@ -55,9 +58,10 @@ function createCard(array) {
 //It then attaches an event listener to each card that will call the 
 //createModal() function on the card and redefine the employeeNumber variable
 //with the numerical value of that card. 
-function selectCards() {
+function selectCards(array) {
 
-    createCard(employeeArray)
+    createCard(array)
+    cards = [];
 
     let allCards = (document.querySelectorAll('.card'))
     allCards.forEach(card => {
@@ -67,7 +71,7 @@ function selectCards() {
     cards.forEach(card => {
         card.addEventListener('click', e => {
             employeeNumber = getEmployeeNumber(card)
-            createModal(card)
+            createModal(array)
         })
     })
 
@@ -85,23 +89,18 @@ function getEmployeeNumber(card) {
 //employee number and use insertModal() and modalButtons() to insert those overlay elements 
 //onto the screen. 
 
-//ERROR: Something in this function is redefining the employee number to always be the value of the 
-//originally clicked card. 
+function createModal(array) {
 
-function createModal(card) {
-
-    console.log(employeeNumber)
     const modal = modalHTML(employeeNumber);
 
     insertModal(modal)
-    modalButtons(employeeNumber)
+    modalButtons(array)
 
 }
 
 
-//This function receives the numerical value of a selected card and returns an HTML modal containing
-//that card's information. 
-function modalHTML(employeeNumber) {
+//This function returns an HTML modal containing the information of the card selected by the user.
+function modalHTML() {
 
     const arrayIndex = employeeArray[employeeNumber];
     const HTML = `
@@ -128,15 +127,14 @@ function modalHTML(employeeNumber) {
     return HTML
 }
 
-//This function receives the employee number of the displayed modal and adds 'PREV' and
-//'NEXT' buttons onto the modal overlay. The event listeners on each of these buttons 
-//will generate a new modal with the information of employee card of the previous or 
-//following employee number. 
+//This function adds 'PREV' and 'NEXT' buttons onto the modal overlay. 
+//The event listeners on each of these buttons will generate a new modal with 
+//the information of employee card of the previous or following employee number. 
+//The conditionals disable the 'PREV' and 'NEXT' buttons at the beginning
+//and end of the list of cards, respectively.
 
-//ERROR: The 'PREV' button does not work, likely due to an error with createModal().
-function modalButtons(employeeNumber) {
-    // const employeeCard = document.getElementById(`${employeeNumber}-employee`)
-    // console.log(employeeCard)
+function modalButtons(array) {
+
     const closeButton = document.getElementById('modal-close-btn');
     const domModal = document.getElementById('modal-container');
     const prevButton = document.getElementById('modal-prev');
@@ -144,16 +142,25 @@ function modalButtons(employeeNumber) {
 
     closeButton.addEventListener('click', () => domModal.remove());
 
-    prevButton.addEventListener('click', () => {
-        console.log(employeeNumber)
-        employeeNumber -= 1;
-        console.log(employeeNumber)
-        let prevEmployee = document.getElementById(`${employeeNumber}-employee`)
+    if (employeeNumber === 0) {
+        prevButton.disabled = true;
+        prevButton.style.backgroundColor = "lightgray"
+    } 
+    
+    if (employeeNumber === array.length) {
+        nextButton.disabled = true;
+        nextButton.style.backgroundColor = "lightgray"
+    }
 
-        createModal(prevEmployee)
+    prevButton.addEventListener('click', () => {
+        employeeNumber -= 1;
+        createModal()
     })
 
-    nextButton.addEventListener('click', () => console.log('next'))
+    nextButton.addEventListener('click', () => {
+        employeeNumber += 1;
+        createModal()
+    })
 
 }
 
@@ -194,3 +201,35 @@ function formatPhone(number) {
     const formattedNumber = plainNumber.replace(regex, '($1) $2-$3')
     return formattedNumber
 }
+
+//This function enables a search feature on the page.
+
+function search(searchInput) {
+
+    const search = searchInput.value.toLowerCase();
+    const searchResults = [];
+
+    employeeArray.forEach (card => {
+        const fullName = `${card.name.first} ${card.name.last}`.toLowerCase()
+
+        if (search.length !==0 && fullName.includes(search)) {
+            searchResults.push(card)
+            selectCards(searchResults)
+
+        } else if (search.length !==0 && searchResults.length === 0) {
+            gallery.innerHTML = `<center>No results found</center>`;
+
+        } else if (search.length === 0) {
+            selectCards(employeeArray)
+        }
+    })
+
+}
+
+searchButton.addEventListener('click', ()=> {
+    search(searchInput)
+})
+
+searchInput.addEventListener('keyup', ()=> {
+    search(searchInput)
+})
