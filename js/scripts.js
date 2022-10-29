@@ -83,24 +83,21 @@ function getEmployeeNumber(card) {
     return parseInt(card.id);
 }
 
-//This function receives one of the HTML cards printed to the page with createCard().
-//If there is not already a modal overlayed onto the screen, it will use the getEmployeeNumber()
-//function to parse the employee number of the selected card. It will then modalHTML() on that
-//employee number and use insertModal() and modalButtons() to insert those overlay elements 
+//This function receives an array of objects containing employee information.
+//It will then use insertModal() and modalButtons() to insert those overlay elements 
 //onto the screen. 
+function createModal(array) {
 
-function createModal(array, card) {
-
-    insertModal(modalHTML(card))
+    insertModal(modalHTML(array))
     modalButtons(array)
 
 }
 
 
 //This function returns an HTML modal containing the information of the card selected by the user.
-function modalHTML() {
+function modalHTML(array) {
 
-    const arrayIndex = employeeArray[employeeNumber];
+    const arrayIndex = array[employeeNumber];
     const HTML = `
     <div class="modal-container" id="modal-container">
         <div class="modal">
@@ -127,10 +124,9 @@ function modalHTML() {
 
 //This function adds 'PREV' and 'NEXT' buttons onto the modal overlay. 
 //The event listeners on each of these buttons will generate a new modal with 
-//the information of employee card of the previous or following employee number. 
+//the information of the employee card of the previous or following employee number. 
 //The conditionals disable the 'PREV' and 'NEXT' buttons at the beginning
 //and end of the list of cards, respectively.
-
 function modalButtons(array) {
 
     const closeButton = document.getElementById('modal-close-btn');
@@ -201,7 +197,6 @@ function formatPhone(number) {
 }
 
 //This function enables a search feature on the page.
-
 function search(searchInput) {
 
     const search = searchInput.value.toLowerCase();
