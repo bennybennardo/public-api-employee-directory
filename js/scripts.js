@@ -89,11 +89,9 @@ function getEmployeeNumber(card) {
 //employee number and use insertModal() and modalButtons() to insert those overlay elements 
 //onto the screen. 
 
-function createModal(array) {
+function createModal(array, card) {
 
-    const modal = modalHTML(employeeNumber);
-
-    insertModal(modal)
+    insertModal(modalHTML(card))
     modalButtons(array)
 
 }
@@ -147,19 +145,19 @@ function modalButtons(array) {
         prevButton.style.backgroundColor = "lightgray"
     } 
     
-    if (employeeNumber === array.length) {
+    if (employeeNumber === array.length-1) {
         nextButton.disabled = true;
         nextButton.style.backgroundColor = "lightgray"
     }
 
     prevButton.addEventListener('click', () => {
         employeeNumber -= 1;
-        createModal()
+        createModal(array, array[employeeNumber])
     })
 
     nextButton.addEventListener('click', () => {
         employeeNumber += 1;
-        createModal()
+        createModal(array, array[employeeNumber])
     })
 
 }
@@ -214,6 +212,7 @@ function search(searchInput) {
 
         if (search.length !==0 && fullName.includes(search)) {
             searchResults.push(card)
+            console.log(searchResults)
             selectCards(searchResults)
 
         } else if (search.length !==0 && searchResults.length === 0) {
